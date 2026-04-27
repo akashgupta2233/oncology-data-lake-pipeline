@@ -1,4 +1,4 @@
-# Clinical Data Pipeline
+# Oncology Data Lake Pipeline
 
 A production-ready Python-based ETL pipeline for processing multi-source clinical data, including patient demographics, laboratory results, diagnoses, medications, and genomics variants. The pipeline implements a three-tier data lake architecture (Raw → Refined → Consumption) with comprehensive data quality controls, anomaly detection, and analytical visualizations.
 
