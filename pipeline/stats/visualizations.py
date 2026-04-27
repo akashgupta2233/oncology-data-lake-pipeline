@@ -109,7 +109,7 @@ def plot_lab_distribution(analytics_summary: dict[str, Any], output_path: Path) 
     available_tests = [test for test in key_tests if test in lab_stats]
     
     if not available_tests:
-        print(f"⚠ Warning: No key lab tests found for visualization")
+        print("⚠ Warning: No key lab tests found for visualization")
         return
     
     # Prepare data for boxplot (using percentiles to approximate distribution)
@@ -160,14 +160,14 @@ def plot_genomics_quality(genomics_variants: pd.DataFrame, output_path: Path) ->
         output_path: Path to save the PNG file
     """
     if genomics_variants.empty:
-        print(f"⚠ Warning: No genomics data available for visualization")
+        print("⚠ Warning: No genomics data available for visualization")
         return
     
     # Filter for valid data
     valid_data = genomics_variants.dropna(subset=["allele_frequency", "read_depth"]).copy()
     
     if valid_data.empty:
-        print(f"⚠ Warning: No valid genomics quality data available")
+        print("⚠ Warning: No valid genomics quality data available")
         return
     
     # Identify pathogenic variants
@@ -299,7 +299,7 @@ def plot_clinical_correlation(patient_master: pd.DataFrame, lab_results: pd.Data
     corr_matrix = correlation_data.corr()
     
     if corr_matrix.empty or len(corr_matrix) < 2:
-        print(f"⚠ Warning: Insufficient data for correlation analysis")
+        print("⚠ Warning: Insufficient data for correlation analysis")
         return
     
     plt.figure(figsize=(10, 8))
@@ -365,7 +365,7 @@ def generate_all_visualizations(
     print(f"✓ Loaded {len(patient_master)} patients")
     print(f"✓ Loaded {len(lab_results)} lab results")
     print(f"✓ Loaded {len(genomics_variants)} genomics variants")
-    print(f"✓ Loaded analytics summary\n")
+    print("✓ Loaded analytics summary\n")
     
     # Generate plots
     print("Generating visualizations...\n")

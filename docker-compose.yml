@@ -4,6 +4,15 @@ services:
   pipeline:
     build:
       context: .
+      dockerfile: Dockerfile
+    container_name: clinical-data-pipeline
     command: python pipeline/main.py
     volumes:
-      - .:/app
+      # Mount the entire project directory to preserve outputs on host
+      - ./datalake:/app/datalake
+      - ./data_quality_report.json:/app/data_quality_report.json
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Automatically remove container after it exits
+    # Comment out the line below if you want to inspect the container after completion
+    # restart: "no"
