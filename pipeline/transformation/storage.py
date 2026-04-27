@@ -4,7 +4,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from pipeline.utils.io import deterministic_sort, replace_directory_contents, write_parquet
+from pipeline.utils.io import (
+    deterministic_sort,
+    replace_directory_contents,
+    write_parquet,
+)
 
 
 def write_partitioned_lab_results(frame: pd.DataFrame, output_dir: Path) -> None:
@@ -13,7 +17,10 @@ def write_partitioned_lab_results(frame: pd.DataFrame, output_dir: Path) -> None
     # analysis while keeping the local lake layout S3-style and deterministic across reruns.
     partitioned = frame.copy()
     partitioned["collection_year"] = (
-        partitioned["collection_date"].dt.year.astype("Int64").astype("string").fillna("unknown")
+        partitioned["collection_date"]
+        .dt.year.astype("Int64")
+        .astype("string")
+        .fillna("unknown")
     )
     partitioned = deterministic_sort(
         partitioned,
@@ -21,8 +28,12 @@ def write_partitioned_lab_results(frame: pd.DataFrame, output_dir: Path) -> None
     )
 
     replace_directory_contents(output_dir)
-    for collection_year, partition_frame in partitioned.groupby("collection_year", sort=True, dropna=False):
-        partition_path = output_dir / f"collection_year={collection_year}" / "lab_results.parquet"
+    for collection_year, partition_frame in partitioned.groupby(
+        "collection_year", sort=True, dropna=False
+    ):
+        partition_path = (
+            output_dir / f"collection_year={collection_year}" / "lab_results.parquet"
+        )
         write_parquet(
             partition_frame.reset_index(drop=True),
             partition_path,

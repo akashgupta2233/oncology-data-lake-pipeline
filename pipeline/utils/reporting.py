@@ -68,4 +68,6 @@ def write_quality_report(
         "datasets": [audit.as_log() for audit in audits],
         "totals": totals,
     }
-    output_path.write_text(json.dumps(payload, indent=2, default=to_jsonable), encoding="utf-8")
+    output_path.write_text(
+        json.dumps(payload, indent=2, default=to_jsonable), encoding="utf-8"
+    )

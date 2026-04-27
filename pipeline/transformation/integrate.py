@@ -8,7 +8,9 @@ from pipeline.utils.reporting import DatasetAudit
 
 
 def _pipe_join(values: Iterable[object]) -> str | None:
-    cleaned = sorted({str(value) for value in values if pd.notna(value) and str(value).strip()})
+    cleaned = sorted(
+        {str(value) for value in values if pd.notna(value) and str(value).strip()}
+    )
     return " | ".join(cleaned) if cleaned else None
 
 
@@ -36,13 +38,18 @@ def aggregate_diagnoses(frame: pd.DataFrame) -> pd.DataFrame:
         frame.groupby("patient_id", dropna=False)
         .agg(
             diagnosis_count=("diagnosis_id", "nunique"),
-            primary_diagnosis_count=("is_primary", lambda values: int(pd.Series(values).fillna(False).sum())),
+            primary_diagnosis_count=(
+                "is_primary",
+                lambda values: int(pd.Series(values).fillna(False).sum()),
+            ),
             latest_diagnosis_date=("diagnosis_date", "max"),
             diagnosis_codes=("icd10_code", _pipe_join),
         )
         .reset_index()
     )
-    summary["primary_diagnosis_count"] = summary["primary_diagnosis_count"].astype("Int64")
+    summary["primary_diagnosis_count"] = summary["primary_diagnosis_count"].astype(
+        "Int64"
+    )
     return summary
 
 
@@ -53,7 +60,10 @@ def aggregate_medications(frame: pd.DataFrame) -> pd.DataFrame:
         frame.groupby("patient_id", dropna=False)
         .agg(
             medication_count=("medication_id", "nunique"),
-            active_medication_count=("status", lambda values: int(pd.Series(values).eq("active").sum())),
+            active_medication_count=(
+                "status",
+                lambda values: int(pd.Series(values).eq("active").sum()),
+            ),
             latest_medication_start_date=("start_date", "max"),
             medications=("medication_name", _pipe_join),
         )
@@ -99,12 +109,18 @@ def build_patient_master(
 
     patient_master = pd.DataFrame({"patient_id": patient_ids})
     patient_master = patient_master.merge(patients, on="patient_id", how="left")
-    patient_master = patient_master.merge(aggregate_lab_results(lab_results), on="patient_id", how="left")
-    patient_master = patient_master.merge(aggregate_diagnoses(diagnoses), on="patient_id", how="left")
+    patient_master = patient_master.merge(
+        aggregate_lab_results(lab_results), on="patient_id", how="left"
+    )
+    patient_master = patient_master.merge(
+        aggregate_diagnoses(diagnoses), on="patient_id", how="left"
+    )
     patient_master = patient_master.merge(
         aggregate_medications(medications), on="patient_id", how="left"
     )
-    patient_master = patient_master.merge(aggregate_genomics(genomics), on="patient_id", how="left")
+    patient_master = patient_master.merge(
+        aggregate_genomics(genomics), on="patient_id", how="left"
+    )
     count_columns = [
         "lab_result_count",
         "distinct_lab_tests",
@@ -118,8 +134,12 @@ def build_patient_master(
     for column in count_columns:
         if column in patient_master.columns:
             patient_master[column] = patient_master[column].astype("Int64")
-    patient_master["has_patient_demographics"] = patient_master["source_dataset"].notna()
-    patient_master = patient_master.sort_values("patient_id", kind="mergesort").reset_index(drop=True)
+    patient_master["has_patient_demographics"] = patient_master[
+        "source_dataset"
+    ].notna()
+    patient_master = patient_master.sort_values(
+        "patient_id", kind="mergesort"
+    ).reset_index(drop=True)
 
     audit = DatasetAudit(
         dataset="patient_master",
@@ -131,7 +151,9 @@ def build_patient_master(
             "encoding": 0,
         },
         metadata={
-            "patients_without_demographics": int((~patient_master["has_patient_demographics"]).sum()),
+            "patients_without_demographics": int(
+                (~patient_master["has_patient_demographics"]).sum()
+            ),
         },
     )
     return patient_master, audit

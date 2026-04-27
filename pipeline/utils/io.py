@@ -35,7 +35,9 @@ def read_dataset(path: Path) -> pd.DataFrame:
 
 def list_data_files(directory: Path) -> list[Path]:
     return sorted(
-        path for path in directory.rglob("*") if path.is_file() and path.suffix.lower() in SUPPORTED_SUFFIXES
+        path
+        for path in directory.rglob("*")
+        if path.is_file() and path.suffix.lower() in SUPPORTED_SUFFIXES
     )
 
 
@@ -43,13 +45,14 @@ def deterministic_sort(frame: pd.DataFrame, columns: Iterable[str]) -> pd.DataFr
     sort_columns = [column for column in columns if column in frame.columns]
     if not sort_columns:
         return frame.reset_index(drop=True)
-    return (
-        frame.sort_values(by=sort_columns, kind="mergesort", na_position="last")
-        .reset_index(drop=True)
-    )
+    return frame.sort_values(
+        by=sort_columns, kind="mergesort", na_position="last"
+    ).reset_index(drop=True)
 
 
-def write_parquet(frame: pd.DataFrame, output_path: Path, sort_by: Iterable[str]) -> None:
+def write_parquet(
+    frame: pd.DataFrame, output_path: Path, sort_by: Iterable[str]
+) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     deterministic_sort(frame.copy(), sort_by).to_parquet(
         output_path,
@@ -65,7 +68,9 @@ def replace_directory_contents(target_dir: Path) -> None:
     target_dir.mkdir(parents=True, exist_ok=True)
 
 
-def mirror_raw_sources(source_dir: Path = DATA_DIR, target_dir: Path = RAW_DIR) -> list[Path]:
+def mirror_raw_sources(
+    source_dir: Path = DATA_DIR, target_dir: Path = RAW_DIR
+) -> list[Path]:
     copied_paths: list[Path] = []
     for source_path in list_data_files(source_dir):
         relative_path = source_path.relative_to(source_dir)

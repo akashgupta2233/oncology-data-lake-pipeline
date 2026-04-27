@@ -43,13 +43,23 @@ def _icd_in_range(code: str, range_start: str, range_end: str) -> bool:
     return start_tuple <= code_tuple <= end_tuple
 
 
-def map_icd10_chapters(diagnoses: pd.DataFrame, icd10_chapters: pd.DataFrame) -> pd.DataFrame:
+def map_icd10_chapters(
+    diagnoses: pd.DataFrame, icd10_chapters: pd.DataFrame
+) -> pd.DataFrame:
     mapped = diagnoses.copy()
     mapped["chapter_name"] = "Unmapped"
     for row in icd10_chapters.itertuples(index=False):
         start_code, end_code = row.code_range.split("-")
-        mask = mapped["icd10_code"].astype("string").apply(
-            lambda value: _icd_in_range(str(value), start_code, end_code) if pd.notna(value) else False
+        mask = (
+            mapped["icd10_code"]
+            .astype("string")
+            .apply(
+                lambda value: (
+                    _icd_in_range(str(value), start_code, end_code)
+                    if pd.notna(value)
+                    else False
+                )
+            )
         )
         mapped.loc[mask, "chapter_name"] = row.chapter_name
     return mapped
@@ -70,7 +80,9 @@ def build_risk_profiles(
         for test_name, config in lab_test_ranges.items()
         if test_name.upper() in DIABETES_RELATED_TESTS
     }
-    diabetes_labs = lab_results.loc[lab_results["test_name"].isin(diabetes_thresholds)].copy()
+    diabetes_labs = lab_results.loc[
+        lab_results["test_name"].isin(diabetes_thresholds)
+    ].copy()
     diabetes_labs["critical_high"] = diabetes_labs["test_name"].map(diabetes_thresholds)
     diabetes_high_risk = diabetes_labs.loc[
         diabetes_labs["test_value"] > diabetes_labs["critical_high"]
@@ -94,7 +106,10 @@ def build_risk_profiles(
         "icd10_mapping": {
             "chapter_distribution": {
                 str(key): int(value)
-                for key, value in mapped_diagnoses["chapter_name"].value_counts().sort_index().items()
+                for key, value in mapped_diagnoses["chapter_name"]
+                .value_counts()
+                .sort_index()
+                .items()
             },
             "patient_chapters": patient_chapters.to_dict(orient="records"),
         },
@@ -127,7 +142,9 @@ def build_risk_profiles(
                     variant_count=("variant_id", "nunique"),
                     associated_cancers=(
                         "associated_cancers",
-                        lambda values: sorted({item for sublist in values for item in sublist}),
+                        lambda values: sorted(
+                            {item for sublist in values for item in sublist}
+                        ),
                     ),
                 )
                 .reset_index()

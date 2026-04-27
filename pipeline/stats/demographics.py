@@ -8,7 +8,9 @@ import pandas as pd
 
 def _age_series(date_of_birth: pd.Series) -> pd.Series:
     as_of_date = datetime.now(timezone.utc).date()
-    ages = ((pd.Timestamp(as_of_date) - date_of_birth).dt.days / 365.25).astype("float64")
+    ages = ((pd.Timestamp(as_of_date) - date_of_birth).dt.days / 365.25).astype(
+        "float64"
+    )
     return ages.where(date_of_birth.notna())
 
 
@@ -26,10 +28,18 @@ def summarize_demographics(patients: pd.DataFrame) -> dict[str, Any]:
         },
         "gender_distribution": {
             str(key): int(value)
-            for key, value in demographics["sex"].fillna("Unknown").value_counts().sort_index().items()
+            for key, value in demographics["sex"]
+            .fillna("Unknown")
+            .value_counts()
+            .sort_index()
+            .items()
         },
         "site_distribution": {
             str(key): int(value)
-            for key, value in demographics["site"].fillna("Unknown").value_counts().sort_index().items()
+            for key, value in demographics["site"]
+            .fillna("Unknown")
+            .value_counts()
+            .sort_index()
+            .items()
         },
     }

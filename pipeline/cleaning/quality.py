@@ -104,7 +104,9 @@ def _normalize_text_value(value: Any) -> tuple[Any, int]:
     return cleaned, encoding_fixes
 
 
-def normalize_text_columns(frame: pd.DataFrame, columns: Iterable[str] | None = None) -> tuple[pd.DataFrame, int]:
+def normalize_text_columns(
+    frame: pd.DataFrame, columns: Iterable[str] | None = None
+) -> tuple[pd.DataFrame, int]:
     normalized = frame.copy()
     target_columns = list(columns) if columns is not None else list(normalized.columns)
     encoding_fixes = 0
@@ -167,7 +169,9 @@ def normalize_boolean(series: pd.Series) -> pd.Series:
     return series.apply(_convert).astype("boolean")
 
 
-def resolve_duplicates(frame: pd.DataFrame, primary_key: str) -> tuple[pd.DataFrame, int]:
+def resolve_duplicates(
+    frame: pd.DataFrame, primary_key: str
+) -> tuple[pd.DataFrame, int]:
     working = frame.copy()
     working["_completeness_score"] = working.notna().sum(axis=1)
     working = working.sort_values(
@@ -205,7 +209,9 @@ def _build_audit(
     )
 
 
-def standardize_alpha_patients(frame: pd.DataFrame) -> tuple[pd.DataFrame, DatasetAudit]:
+def standardize_alpha_patients(
+    frame: pd.DataFrame,
+) -> tuple[pd.DataFrame, DatasetAudit]:
     rows_in = len(frame)
     cleaned, encoding_fixes = normalize_text_columns(frame)
     cleaned = cleaned.rename(
@@ -214,9 +220,15 @@ def standardize_alpha_patients(frame: pd.DataFrame) -> tuple[pd.DataFrame, Datas
             "discharge_dt": "discharge_date",
         }
     )
-    cleaned["date_of_birth"] = parse_date_series(cleaned["date_of_birth"], slash_format="mdy")
-    cleaned["admission_date"] = parse_date_series(cleaned["admission_date"], slash_format="mdy")
-    cleaned["discharge_date"] = parse_date_series(cleaned["discharge_date"], slash_format="mdy")
+    cleaned["date_of_birth"] = parse_date_series(
+        cleaned["date_of_birth"], slash_format="mdy"
+    )
+    cleaned["admission_date"] = parse_date_series(
+        cleaned["admission_date"], slash_format="mdy"
+    )
+    cleaned["discharge_date"] = parse_date_series(
+        cleaned["discharge_date"], slash_format="mdy"
+    )
     null_count = int(cleaned.isna().sum().sum())
     cleaned["sex"] = cleaned["sex"].map({"M": "M", "F": "F"}).fillna("U")
     cleaned["blood_group"] = cleaned["blood_group"].fillna("Unknown")
@@ -252,10 +264,14 @@ def standardize_beta_patients(frame: pd.DataFrame) -> tuple[pd.DataFrame, Datase
             "sex": working["gender"],
             "blood_group": working["bloodType"],
             "admission_date": working["encounter"].apply(
-                lambda value: value.get("admissionDate") if isinstance(value, dict) else pd.NA
+                lambda value: (
+                    value.get("admissionDate") if isinstance(value, dict) else pd.NA
+                )
             ),
             "discharge_date": working["encounter"].apply(
-                lambda value: value.get("dischargeDate") if isinstance(value, dict) else pd.NA
+                lambda value: (
+                    value.get("dischargeDate") if isinstance(value, dict) else pd.NA
+                )
             ),
             "contact_phone": working["contact"].apply(
                 lambda value: value.get("phone") if isinstance(value, dict) else pd.NA
@@ -264,17 +280,27 @@ def standardize_beta_patients(frame: pd.DataFrame) -> tuple[pd.DataFrame, Datase
                 lambda value: value.get("email") if isinstance(value, dict) else pd.NA
             ),
             "site": working["encounter"].apply(
-                lambda value: value.get("facility") if isinstance(value, dict) else pd.NA
+                lambda value: (
+                    value.get("facility") if isinstance(value, dict) else pd.NA
+                )
             ),
         }
     )
     cleaned, encoding_fixes = normalize_text_columns(standardized)
     cleaned["date_of_birth"] = parse_date_series(cleaned["date_of_birth"])
-    cleaned["admission_date"] = parse_date_series(cleaned["admission_date"], dash_dayfirst=True)
-    cleaned["discharge_date"] = parse_date_series(cleaned["discharge_date"], dash_dayfirst=True)
+    cleaned["admission_date"] = parse_date_series(
+        cleaned["admission_date"], dash_dayfirst=True
+    )
+    cleaned["discharge_date"] = parse_date_series(
+        cleaned["discharge_date"], dash_dayfirst=True
+    )
     null_count = int(cleaned.isna().sum().sum())
     cleaned["sex"] = (
-        cleaned["sex"].astype("string").str.lower().map({"male": "M", "female": "F"}).fillna("U")
+        cleaned["sex"]
+        .astype("string")
+        .str.lower()
+        .map({"male": "M", "female": "F"})
+        .fillna("U")
     )
     cleaned["blood_group"] = cleaned["blood_group"].fillna("Unknown")
     cleaned["contact_phone"] = cleaned["contact_phone"].fillna("Not Available")
@@ -292,7 +318,9 @@ def standardize_beta_patients(frame: pd.DataFrame) -> tuple[pd.DataFrame, Datase
     )
 
 
-def unify_patients(alpha: pd.DataFrame, beta: pd.DataFrame) -> tuple[pd.DataFrame, DatasetAudit]:
+def unify_patients(
+    alpha: pd.DataFrame, beta: pd.DataFrame
+) -> tuple[pd.DataFrame, DatasetAudit]:
     unified = pd.concat([alpha, beta], ignore_index=True)
     unified, duplicates_removed = resolve_duplicates(unified, "patient_id")
     audit = DatasetAudit(
@@ -332,7 +360,9 @@ def clean_lab_results(frame: pd.DataFrame) -> tuple[pd.DataFrame, DatasetAudit]:
 def clean_diagnoses(frame: pd.DataFrame) -> tuple[pd.DataFrame, DatasetAudit]:
     rows_in = len(frame)
     cleaned, encoding_fixes = normalize_text_columns(frame)
-    cleaned["diagnosis_date"] = parse_date_series(cleaned["diagnosis_date"], slash_format="mdy")
+    cleaned["diagnosis_date"] = parse_date_series(
+        cleaned["diagnosis_date"], slash_format="mdy"
+    )
     cleaned["is_primary"] = normalize_boolean(cleaned["is_primary"])
     null_count = int(cleaned.isna().sum().sum())
     cleaned["notes"] = cleaned["notes"].fillna("")
@@ -373,11 +403,15 @@ def clean_genomics_variants(frame: pd.DataFrame) -> tuple[pd.DataFrame, DatasetA
     rows_in = len(frame)
     cleaned, encoding_fixes = normalize_text_columns(frame)
     cleaned = cleaned.rename(columns={"patient_ref": "patient_id"})
-    cleaned["allele_frequency"] = pd.to_numeric(cleaned["allele_frequency"], errors="coerce")
+    cleaned["allele_frequency"] = pd.to_numeric(
+        cleaned["allele_frequency"], errors="coerce"
+    )
     cleaned["read_depth"] = pd.to_numeric(cleaned["read_depth"], errors="coerce")
     cleaned["sample_date"] = parse_date_series(cleaned["sample_date"])
     null_count = int(cleaned.isna().sum().sum())
-    cleaned["clinical_significance"] = cleaned["clinical_significance"].fillna("Unknown")
+    cleaned["clinical_significance"] = cleaned["clinical_significance"].fillna(
+        "Unknown"
+    )
     cleaned["chromosome"] = cleaned["chromosome"].astype("string")
     cleaned["variant_type"] = cleaned["variant_type"].astype("string")
     cleaned, duplicates_removed = resolve_duplicates(cleaned, "variant_id")
@@ -386,7 +420,9 @@ def clean_genomics_variants(frame: pd.DataFrame) -> tuple[pd.DataFrame, DatasetA
     valid_chromosomes = set(RELIABLE_CALL_DEFINITION["criteria"]["valid_chromosomes"])
     reliable_mask = (
         cleaned[required_fields].notna().all(axis=1)
-        & cleaned["read_depth"].ge(RELIABLE_CALL_DEFINITION["criteria"]["read_depth_min"])
+        & cleaned["read_depth"].ge(
+            RELIABLE_CALL_DEFINITION["criteria"]["read_depth_min"]
+        )
         & cleaned["allele_frequency"].between(
             RELIABLE_CALL_DEFINITION["criteria"]["allele_frequency_min"],
             RELIABLE_CALL_DEFINITION["criteria"]["allele_frequency_max"],
@@ -406,7 +442,9 @@ def clean_genomics_variants(frame: pd.DataFrame) -> tuple[pd.DataFrame, DatasetA
     )
 
 
-def clean_clinical_notes_metadata(frame: pd.DataFrame) -> tuple[pd.DataFrame, DatasetAudit]:
+def clean_clinical_notes_metadata(
+    frame: pd.DataFrame,
+) -> tuple[pd.DataFrame, DatasetAudit]:
     rows_in = len(frame)
     cleaned, encoding_fixes = normalize_text_columns(frame)
     cleaned["note_date"] = parse_date_series(cleaned["note_date"], slash_format="mdy")

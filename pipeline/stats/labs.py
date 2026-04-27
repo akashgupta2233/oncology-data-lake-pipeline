@@ -36,7 +36,9 @@ def summarize_lab_statistics(
             "excluded_row_count": excluded_row_count,
             "mean": round(float(values.mean()), 4),
             "median": round(float(values.median()), 4),
-            "std_dev": round(float(values.std(ddof=1)), 4) if values.count() > 1 else 0.0,
+            "std_dev": round(float(values.std(ddof=1)), 4)
+            if values.count() > 1
+            else 0.0,
             "percentile_10": round(float(values.quantile(0.10)), 4),
             "percentile_90": round(float(values.quantile(0.90)), 4),
         }

@@ -20,7 +20,11 @@ from pipeline.cleaning import (
     unify_patients,
 )
 from pipeline.ingestion import load_data_sources, load_reference_sources
-from pipeline.stats import summarize_demographics, summarize_lab_statistics, generate_all_visualizations
+from pipeline.stats import (
+    summarize_demographics,
+    summarize_lab_statistics,
+    generate_all_visualizations,
+)
 from pipeline.transformation import (
     build_patient_master,
     build_risk_profiles,
@@ -40,7 +44,12 @@ from pipeline.utils.io import (
     write_parquet,
 )
 from pipeline.utils.metadata import write_manifest
-from pipeline.utils.reporting import emit_dataset_log, to_jsonable, utc_timestamp, write_quality_report
+from pipeline.utils.reporting import (
+    emit_dataset_log,
+    to_jsonable,
+    utc_timestamp,
+    write_quality_report,
+)
 
 
 def main() -> None:
@@ -49,14 +58,22 @@ def main() -> None:
     data_sources = load_data_sources()
     load_reference_sources()
 
-    alpha_patients, alpha_audit = standardize_alpha_patients(data_sources["site_alpha_patients"])
-    beta_patients, beta_audit = standardize_beta_patients(data_sources["site_beta_patients"])
+    alpha_patients, alpha_audit = standardize_alpha_patients(
+        data_sources["site_alpha_patients"]
+    )
+    beta_patients, beta_audit = standardize_beta_patients(
+        data_sources["site_beta_patients"]
+    )
     patients, patients_audit = unify_patients(alpha_patients, beta_patients)
     lab_results, lab_audit = clean_lab_results(data_sources["site_gamma_lab_results"])
     diagnoses, diagnoses_audit = clean_diagnoses(data_sources["diagnoses_icd10"])
     medications, medications_audit = clean_medications(data_sources["medications_log"])
-    genomics, genomics_audit = clean_genomics_variants(data_sources["genomics_variants"])
-    clinical_notes, notes_audit = clean_clinical_notes_metadata(data_sources["clinical_notes_metadata"])
+    genomics, genomics_audit = clean_genomics_variants(
+        data_sources["genomics_variants"]
+    )
+    clinical_notes, notes_audit = clean_clinical_notes_metadata(
+        data_sources["clinical_notes_metadata"]
+    )
     patient_master, patient_master_audit = build_patient_master(
         patients,
         lab_results,
@@ -78,22 +95,34 @@ def main() -> None:
         emit_dataset_log(audit)
 
     write_parquet(patients, REFINED_DIR / "patients.parquet", sort_by=["patient_id"])
-    write_parquet(diagnoses, REFINED_DIR / "diagnoses.parquet", sort_by=["diagnosis_id"])
-    write_parquet(medications, REFINED_DIR / "medications.parquet", sort_by=["medication_id"])
-    write_parquet(genomics, REFINED_DIR / "genomics_variants.parquet", sort_by=["variant_id"])
+    write_parquet(
+        diagnoses, REFINED_DIR / "diagnoses.parquet", sort_by=["diagnosis_id"]
+    )
+    write_parquet(
+        medications, REFINED_DIR / "medications.parquet", sort_by=["medication_id"]
+    )
+    write_parquet(
+        genomics, REFINED_DIR / "genomics_variants.parquet", sort_by=["variant_id"]
+    )
     write_parquet(
         clinical_notes,
         REFINED_DIR / "clinical_notes_metadata.parquet",
         sort_by=["note_id"],
     )
-    write_parquet(patient_master, REFINED_DIR / "patient_master.parquet", sort_by=["patient_id"])
+    write_parquet(
+        patient_master, REFINED_DIR / "patient_master.parquet", sort_by=["patient_id"]
+    )
     write_partitioned_lab_results(lab_results, REFINED_DIR / "lab_results")
 
     legacy_lab_results_file = REFINED_DIR / "lab_results.parquet"
     if legacy_lab_results_file.exists():
         legacy_lab_results_file.unlink()
 
-    write_quality_report(PROJECT_ROOT / "data_quality_report.json", source_audits, RELIABLE_CALL_DEFINITION)
+    write_quality_report(
+        PROJECT_ROOT / "data_quality_report.json",
+        source_audits,
+        RELIABLE_CALL_DEFINITION,
+    )
 
     refined_patients = pd.read_parquet(REFINED_DIR / "patients.parquet")
     refined_patient_master = pd.read_parquet(REFINED_DIR / "patient_master.parquet")
@@ -101,9 +130,15 @@ def main() -> None:
     refined_genomics = pd.read_parquet(REFINED_DIR / "genomics_variants.parquet")
     refined_labs = read_partitioned_parquet(REFINED_DIR / "lab_results")
 
-    gene_reference = load_gene_reference(PROJECT_ROOT / "data" / "reference" / "gene_reference.json")
-    icd10_chapters = load_icd10_chapters(PROJECT_ROOT / "data" / "reference" / "icd10_chapters.csv")
-    lab_ranges = load_lab_ranges(PROJECT_ROOT / "data" / "reference" / "lab_test_ranges.json")
+    gene_reference = load_gene_reference(
+        PROJECT_ROOT / "data" / "reference" / "gene_reference.json"
+    )
+    icd10_chapters = load_icd10_chapters(
+        PROJECT_ROOT / "data" / "reference" / "icd10_chapters.csv"
+    )
+    lab_ranges = load_lab_ranges(
+        PROJECT_ROOT / "data" / "reference" / "lab_test_ranges.json"
+    )
 
     analytics_summary = {
         "generated_at": utc_timestamp(),

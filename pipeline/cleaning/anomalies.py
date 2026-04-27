@@ -8,7 +8,9 @@ import pandas as pd
 
 def _age_years(date_of_birth: pd.Series) -> pd.Series:
     as_of_date = datetime.now(timezone.utc).date()
-    return ((pd.Timestamp(as_of_date) - date_of_birth).dt.days / 365.25).astype("float64")
+    return ((pd.Timestamp(as_of_date) - date_of_birth).dt.days / 365.25).astype(
+        "float64"
+    )
 
 
 def detect_anomalies(
@@ -31,7 +33,16 @@ def detect_anomalies(
 
     impossible_lab_values = lab_results.loc[
         lab_results["test_value"].notna() & (lab_results["test_value"] < 0)
-    ][["lab_result_id", "patient_id", "test_name", "test_value", "test_unit", "collection_date"]]
+    ][
+        [
+            "lab_result_id",
+            "patient_id",
+            "test_name",
+            "test_value",
+            "test_unit",
+            "collection_date",
+        ]
+    ]
 
     lab_ranges = {key.upper(): value for key, value in lab_test_ranges.items()}
     lab_bounds_mask = lab_results.apply(
@@ -46,16 +57,23 @@ def detect_anomalies(
         axis=1,
     )
     outside_critical_bounds = lab_results.loc[lab_bounds_mask][
-        ["lab_result_id", "patient_id", "test_name", "test_value", "test_unit", "collection_date"]
+        [
+            "lab_result_id",
+            "patient_id",
+            "test_name",
+            "test_value",
+            "test_unit",
+            "collection_date",
+        ]
     ]
 
     unique_flagged_records = pd.concat(
         [
             impossible_lab_values[["lab_result_id"]].assign(record_type="lab"),
             outside_critical_bounds[["lab_result_id"]].assign(record_type="lab"),
-            age_anomalies[["patient_id"]].rename(columns={"patient_id": "lab_result_id"}).assign(
-                record_type="patient"
-            ),
+            age_anomalies[["patient_id"]]
+            .rename(columns={"patient_id": "lab_result_id"})
+            .assign(record_type="patient"),
             discharge_before_admission[["patient_id"]]
             .rename(columns={"patient_id": "lab_result_id"})
             .assign(record_type="patient"),
