@@ -1,0 +1,7 @@
+datalake/
+__pycache__/
+.git/
+.github/
+*.pyc
+venv/
+.venv/

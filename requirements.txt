@@ -1,0 +1,6 @@
+pandas
+pyarrow
+fastparquet
+matplotlib
+seaborn
+ruff
