@@ -142,7 +142,7 @@ datalake/
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/akashgupta2233/oncology-data-lake-pipeline
 cd clinical-data-pipeline
 
 # Run the pipeline
@@ -523,7 +523,7 @@ See `datalake/consumption/plots/plots_README.md` for full documentation.
 
 ```bash
 # Clone repository
-git clone <repository-url>
+git clone https://github.com/akashgupta2233/oncology-data-lake-pipeline
 cd clinical-data-pipeline
 
 # Create virtual environment
@@ -586,9 +586,9 @@ ruff            # Linting and formatting
 - Builds Docker image
 - Verifies image creation
 
-**Status Badge**: Add to README:
+**Status Badge**: 
 ```markdown
-![CI](https://github.com/<username>/<repo>/workflows/CI/badge.svg)
+[![CI](https://github.com/akashgupta2233/oncology-data-lake-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/akashgupta2233/oncology-data-lake-pipeline/actions/workflows/ci.yml)
 ```
 
 ---
@@ -670,36 +670,5 @@ When using Docker Compose, outputs are persisted to the host via volume mounts:
 
 ---
 
-## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
-Ensure all CI checks pass before requesting review.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-## 🙏 Acknowledgments
-
-- **ICD-10 Reference**: World Health Organization
-- **Gene Reference**: NCBI Gene Database
-- **Lab Test Ranges**: Clinical Laboratory Standards Institute (CLSI)
-
----
-
-## 📧 Contact
-
-For questions or issues, please open a GitHub issue or contact the maintainers.
-
----
-
-**Built with ❤️ for clinical data engineering**
